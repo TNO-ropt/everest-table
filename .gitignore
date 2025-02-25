@@ -1,0 +1,4 @@
+**/__pycache__/**
+src/**egg-info/**
+src/everest_table/version.py
+uv.lock
