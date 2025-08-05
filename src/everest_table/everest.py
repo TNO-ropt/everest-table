@@ -4,42 +4,44 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Final
 
-from ropt.plugins.plan.base import PlanHandlerPlugin, PlanStepPlugin
+from ropt.plugins.plan.base import EventHandlerPlugin
 
-from ._everest_config import EverestConfigStep
 from ._results_table import EverestDefaultTableHandler
 
 if TYPE_CHECKING:
     from ropt.plan import Plan
-    from ropt.plugins.plan.base import PlanHandler, PlanStep
+    from ropt.plugins.plan.base import EventHandler, PlanComponent
 
 
-_RESULT_HANDLER_OBJECTS: Final[dict[str, type[PlanHandler]]] = {
+_EVENT_HANDLER_OBJECTS: Final[dict[str, type[EventHandler]]] = {
     "table": EverestDefaultTableHandler,
 }
 
-_STEP_OBJECTS: Final[dict[str, type[PlanStep]]] = {
-    "everest_config": EverestConfigStep,
-}
 
-
-class EverestTablePlanHandlerPlugin(PlanHandlerPlugin):
-    """The everest plan handler class."""
+class EverestTableEventHandlerPlugin(EventHandlerPlugin):
+    """The everest event handler class."""
 
     @classmethod
-    def create(cls, name: str, plan: Plan, **kwargs: dict[str, Any]) -> PlanHandler:
-        """Create a result  handler.
+    def create(
+        cls,
+        name: str,
+        plan: Plan,
+        tags: set[str] | None = None,
+        sources: set[PlanComponent | str] | None = None,
+        **kwargs: dict[str, Any],
+    ) -> EventHandler:
+        """Create a event event handler.
 
         See the [ropt.plugins.plan.base.PlanPlugin][] abstract base class.
 
         # noqa
         """
         _, _, name = name.lower().rpartition("/")
-        obj = _RESULT_HANDLER_OBJECTS.get(name)
+        obj = _EVENT_HANDLER_OBJECTS.get(name)
         if obj is not None:
-            return obj(plan, **kwargs)
+            return obj(plan, tags, sources, **kwargs)
 
-        msg = f"Unknown results handler object type: {name}"
+        msg = f"Unknown event handler object type: {name}"
         raise TypeError(msg)
 
     @classmethod
@@ -50,34 +52,4 @@ class EverestTablePlanHandlerPlugin(PlanHandlerPlugin):
 
         # noqa
         """
-        return method.lower() in _RESULT_HANDLER_OBJECTS
-
-
-class EverestTablePlanStepPlugin(PlanStepPlugin):
-    """The everest plan step class."""
-
-    @classmethod
-    def create(cls, name: str, plan: Plan, **kwargs: Any) -> PlanStep:  # noqa: ANN401
-        """Create a step.
-
-        See the [ropt.plugins.plan.base.PlanPlugin][] abstract base class.
-
-        # noqa
-        """
-        _, _, name = name.lower().rpartition("/")
-        step_obj = _STEP_OBJECTS.get(name)
-        if step_obj is not None:
-            return step_obj(plan, **kwargs)
-
-        msg = f"Unknown step type: {name}"
-        raise TypeError(msg)
-
-    @classmethod
-    def is_supported(cls, method: str) -> bool:
-        """Check if a method is supported.
-
-        See the [ropt.plugins.base.Plugin][] abstract base class.
-
-        # noqa
-        """
-        return method.lower() in _STEP_OBJECTS
+        return method.lower() in _EVENT_HANDLER_OBJECTS

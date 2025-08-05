@@ -1,95 +1,83 @@
-"""A handler for creating report tables."""
-
 from __future__ import annotations
 
 from copy import deepcopy
-from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
 from ropt.enums import EventType
-from ropt.plugins.plan.base import PlanHandler
+from ropt.plugins.plan.base import EventHandler, PlanComponent
 from ropt.results import Results, results_to_dataframe
 from tabulate import tabulate
 
-from ._utils import (
-    TABLE_COLUMNS,
-    TABLE_TYPE_MAP,
-    get_names,
-    rename_columns,
-    reorder_columns,
-)
+from ._utils import TABLE_COLUMNS, TABLE_TYPE_MAP, rename_columns, reorder_columns
 
 if TYPE_CHECKING:
-    import uuid
     from collections.abc import Sequence
+    from pathlib import Path
 
-    from everest.config import EverestConfig
     from ropt.plan import Event, Plan
 
 
-class EverestDefaultTableHandler(PlanHandler):
+class EverestDefaultTableHandler(EventHandler):
     def __init__(
         self,
         plan: Plan,
-        *,
-        everest_config: EverestConfig,
-        sources: set[uuid.UUID] | None = None,
+        tags: set[str] | None = None,
+        sources: set[PlanComponent | str] | None = None,
     ) -> None:
-        super().__init__(plan)
-        self._sources = sources
+        super().__init__(plan, tags, sources)
+        self._path: Path | None = None
         self._tables = []
-        names = get_names(everest_config)
         for type_, table_type in TABLE_TYPE_MAP.items():
             self._tables.append(
                 ResultsTable(
+                    f"{type_}.txt",
                     TABLE_COLUMNS[type_],
-                    Path(everest_config.optimization_output_dir) / f"{type_}.txt",
                     table_type=table_type,
-                    names=names,
                     min_header_len=3,
                 )
             )
 
     def handle_event(self, event: Event) -> None:
-        if (
-            event.event_type == EventType.FINISHED_EVALUATION
-            and "results" in event.data
-            and (self._sources is None or event.source in self._sources)
-        ):
-            results = tuple(
-                item.transform_from_optimizer(event.config.transforms)
-                for item in event.data["results"]
-            )
-            for table in self._tables:
-                table.add_results(results)
+        parent_path = event.data["config"].optimizer.output_dir
+        if parent_path is None or (results := event.data.get("results")) is None:
+            return
+
+        if self._path is None:
+            if parent_path.exists() and not parent_path.is_dir():
+                msg = f"Cannot write tables to: {parent_path}"
+                raise RuntimeError(msg)
+            self._path = parent_path
+
+        transforms = event.data["transforms"]
+        results = tuple(
+            item if transforms is None else item.transform_from_optimizer(transforms)
+            for item in results
+        )
+        for table in self._tables:
+            table.add_results(results, self._path)
+
+    @property
+    def event_types(self) -> set[EventType]:
+        return {EventType.FINISHED_EVALUATION}
 
 
 class ResultsTable:
     def __init__(
         self,
+        file_name: str,
         columns: dict[str, str],
-        path: Path,
         *,
         table_type: Literal["functions", "gradients"] = "functions",
-        names: dict[str, Sequence[str | int] | None] | None = None,
         min_header_len: int | None = None,
     ) -> None:
-        if path.parent.exists():
-            if not path.parent.is_dir():
-                msg = f"Cannot write table to: {path}"
-                raise RuntimeError(msg)
-        else:
-            path.parent.mkdir(parents=True, exist_ok=True)
-
+        self._file_name = file_name
         self._columns = columns
-        self._path = path
-        self._names = names
         self._results_type = table_type
         self._min_header_len = min_header_len
         self._frames: list[pd.DataFrame] = []
 
-    def add_results(self, results: Sequence[Results]) -> None:
+    def add_results(self, results: Sequence[Results], path: Path) -> None:
         columns = deepcopy(self._columns)
         if results[0].metadata is not None:
             for item in results[0].metadata:
@@ -98,13 +86,12 @@ class ResultsTable:
             results,
             set(columns),
             result_type=self._results_type,
-            names=self._names,
         )
         if not frame.empty:
             self._frames.append(frame)
-            self.save(columns)
+            self._save(columns, path / self._file_name)
 
-    def save(self, columns: dict[str, str]) -> None:
+    def _save(self, columns: dict[str, str], path: Path) -> None:
         data = pd.concat(self._frames)
         if not data.empty:
             # Turn the multi-index into columns:
@@ -130,7 +117,7 @@ class ResultsTable:
 
             # Write the table to a file:
             table_data = {str(column): data[column] for column in data}
-            self._path.write_text(
+            path.write_text(
                 tabulate(
                     table_data, headers="keys", tablefmt="simple", showindex=False
                 ),

@@ -23,11 +23,8 @@ dependencies = ["tabulate"]
 "Repository" = "https://github.com/TNO-ropt/everest-table"
 "Bug Tracker" = "https://github.com/TNO-ropt/everest-table/issues"
 
-[project.entry-points."ropt.plugins.plan_handler"]
-everest_table = "everest_table.everest:EverestTablePlanHandlerPlugin"
-
-[project.entry-points."ropt.plugins.plan_step"]
-everest_table = "everest_table.everest:EverestTablePlanStepPlugin"
+[project.entry-points."ropt.plugins.event_handler"]
+everest_table = "everest_table.everest:EverestTableEventHandlerPlugin"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -49,14 +46,8 @@ exclude = ["src/everest_table/version.py", "build"]
 exclude = ["test-data/*"]
 select = ["ALL"]
 ignore = [
-    "AIR",    # airflow-variable-name-task-id-mismatch
     "COM812", # missing-trailing-comma
     "E501",   # line-too-lone
-    "ISC001", # single-line-implicit-string-concatenation   
-    "DJ",     # flake8-django
-    "FA",     # flake8-future-annotations
-    "PGH004", # blanket-noqa
-    "UP",     # pyupgrade 
     "S101",   # assert
 ]
 
