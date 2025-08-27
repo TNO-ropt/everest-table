@@ -51,7 +51,9 @@ class EverestDefaultTableHandler(EventHandler):
 
         transforms = event.data["transforms"]
         results = tuple(
-            item if transforms is None else item.transform_from_optimizer(transforms)
+            item
+            if transforms is None
+            else item.transform_from_optimizer(event.data["config"], transforms)
             for item in results
         )
         for table in self._tables:
