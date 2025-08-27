@@ -2,13 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, Literal
 
-from ropt.enums import AxisName
-
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     import pandas as pd
-    from everest.config import EverestConfig
 
 TABLE_COLUMNS: Final[dict[str, dict[str, str]]] = {
     "results": {
