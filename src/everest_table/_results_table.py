@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
 from ropt.enums import EventType
-from ropt.plugins.plan.base import EventHandler, PlanComponent
+from ropt.plugins.event_handler.base import EventHandler
 from ropt.results import Results, results_to_dataframe
 from tabulate import tabulate
 
@@ -15,17 +15,14 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
-    from ropt.plan import Event, Plan
+    from ropt.optimization import Event
 
 
 class EverestDefaultTableHandler(EventHandler):
     def __init__(
         self,
-        plan: Plan,
-        tags: set[str] | None = None,
-        sources: set[PlanComponent | str] | None = None,
     ) -> None:
-        super().__init__(plan, tags, sources)
+        super().__init__()
         self._path: Path | None = None
         self._tables = []
         for type_, table_type in TABLE_TYPE_MAP.items():
