@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
-    from ropt.optimization import Event
+    from ropt.workflow import Event
 
 
 class EverestDefaultTableHandler(EventHandler):
