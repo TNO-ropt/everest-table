@@ -120,4 +120,5 @@ class ResultsTable:
                 tabulate(
                     table_data, headers="keys", tablefmt="simple", showindex=False
                 ),
+                encoding="utf-8",
             )

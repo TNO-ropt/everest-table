@@ -36,11 +36,13 @@ write_to = "src/everest_table/version.py"
 exclude = ["src/everest_table/version.py", "build"]
 
 [tool.ruff.lint]
+preview = true
 exclude = ["test-data/*"]
 select = ["ALL"]
 ignore = [
     "COM812", # missing-trailing-comma
-    "E501",   # line-too-lone
+    "CPY",    # flake8-copyright
+    "E501",   # line-too-long
     "S101",   # assert
 ]
 

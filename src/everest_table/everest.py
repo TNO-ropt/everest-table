@@ -29,7 +29,7 @@ class EverestTableEventHandlerPlugin(EventHandlerPlugin):
         """Create a event event handler.
 
         # noqa
-        """
+        """  # noqa: DOC201, DOC501
         _, _, name = name.lower().rpartition("/")
         obj = _EVENT_HANDLER_OBJECTS.get(name)
         if obj is not None:
@@ -43,5 +43,5 @@ class EverestTableEventHandlerPlugin(EventHandlerPlugin):
         """Check if a method is supported.
 
         # noqa
-        """
+        """  # noqa: DOC201
         return method.lower() in _EVENT_HANDLER_OBJECTS
