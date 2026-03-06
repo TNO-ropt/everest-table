@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
 from ropt.enums import EventType
-from ropt.plugins.event_handler.base import EventHandler
 from ropt.results import Results, results_to_dataframe
+from ropt.workflow.event_handlers import EventHandler
 from tabulate import tabulate
 
 from ._utils import TABLE_COLUMNS, TABLE_TYPE_MAP, rename_columns, reorder_columns
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
-    from ropt.workflow import Event
+    from ropt.optimization import Event
 
 
 class EverestDefaultTableHandler(EventHandler):

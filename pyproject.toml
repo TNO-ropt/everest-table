@@ -16,9 +16,6 @@ dependencies = ["tabulate"]
 "Repository" = "https://github.com/TNO-ropt/everest-table"
 "Bug Tracker" = "https://github.com/TNO-ropt/everest-table/issues"
 
-[project.entry-points."ropt.plugins.event_handler"]
-everest_table = "everest_table.everest:EverestTableEventHandlerPlugin"
-
 [tool.setuptools.packages.find]
 where = ["src"]
 
