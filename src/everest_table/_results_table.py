@@ -4,7 +4,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
 
 import pandas as pd
-from ropt.enums import EventType
+from ropt.enums import EnOptEventType
 from ropt.results import Results, results_to_dataframe
 from ropt.workflow.event_handlers import EventHandler
 from tabulate import tabulate
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
 
-    from ropt.optimization import Event
+    from ropt.events import EnOptEvent
 
 
 class EverestDefaultTableHandler(EventHandler):
@@ -35,9 +35,9 @@ class EverestDefaultTableHandler(EventHandler):
                 )
             )
 
-    def handle_event(self, event: Event) -> None:
-        parent_path = event.data["config"].optimizer.output_dir
-        if parent_path is None or (results := event.data.get("results")) is None:
+    def handle_event(self, event: EnOptEvent) -> None:
+        parent_path = event.config.optimizer.output_dir
+        if parent_path is None or not (results := event.results):
             return
 
         if self._path is None:
@@ -46,19 +46,13 @@ class EverestDefaultTableHandler(EventHandler):
                 raise RuntimeError(msg)
             self._path = parent_path
 
-        transforms = event.data["transforms"]
-        results = tuple(
-            item
-            if transforms is None
-            else item.transform_from_optimizer(event.data["config"], transforms)
-            for item in results
-        )
+        results = tuple(item.transform_from_optimizer(event.config) for item in results)
         for table in self._tables:
             table.add_results(results, self._path)
 
     @property
-    def event_types(self) -> set[EventType]:
-        return {EventType.FINISHED_EVALUATION}
+    def event_types(self) -> set[EnOptEventType]:
+        return {EnOptEventType.FINISHED_EVALUATION}
 
 
 class ResultsTable:

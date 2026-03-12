@@ -8,14 +8,14 @@ if TYPE_CHECKING:
 TABLE_COLUMNS: Final[dict[str, dict[str, str]]] = {
     "results": {
         "batch_id": "Batch",
-        "functions.weighted_objective": "Total-Objective",
+        "functions.target_objective": "Total-Objective",
         "functions.objectives": "Objective",
         "functions.constraints": "Constraint",
         "evaluations.variables": "Control",
     },
     "gradients": {
         "batch_id": "Batch",
-        "gradients.weighted_objective": "Total-Gradient",
+        "gradients.target_objective": "Total-Gradient",
         "gradients.objectives": "Grad-objective",
         "gradients.constraints": "Grad-constraint",
     },
