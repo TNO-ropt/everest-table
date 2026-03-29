@@ -36,7 +36,7 @@ class EverestDefaultTableHandler(EventHandler):
             )
 
     def handle_event(self, event: EnOptEvent) -> None:
-        parent_path = event.config.backend.output_dir
+        parent_path = event.context.backend.output_dir
         if parent_path is None or not (results := event.results):
             return
 
@@ -46,7 +46,9 @@ class EverestDefaultTableHandler(EventHandler):
                 raise RuntimeError(msg)
             self._path = parent_path
 
-        results = tuple(item.transform_from_optimizer(event.config) for item in results)
+        results = tuple(
+            item.transform_from_optimizer(event.context) for item in results
+        )
         for table in self._tables:
             table.add_results(results, self._path)
 
