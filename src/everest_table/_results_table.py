@@ -36,7 +36,7 @@ class EverestDefaultTableHandler(EventHandler):
             )
 
     def handle_event(self, event: EnOptEvent) -> None:
-        parent_path = event.context.backend.output_dir
+        parent_path = event.context.optimizer.output_dir
         if parent_path is None or not (results := event.results):
             return
 
