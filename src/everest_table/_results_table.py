@@ -1,120 +1,98 @@
 from __future__ import annotations
 
-from copy import deepcopy
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Final, Literal
 
-import pandas as pd
-from ropt.enums import EnOptEventType
-from ropt.results import Results, results_to_dataframe
-from ropt.workflow.event_handlers import EventHandler
+from ropt.workflow.event_handlers import Table
 from tabulate import tabulate
 
-from ._utils import TABLE_COLUMNS, TABLE_TYPE_MAP, rename_columns, reorder_columns
-
 if TYPE_CHECKING:
-    from collections.abc import Sequence
     from pathlib import Path
 
     from ropt.events import EnOptEvent
 
 
-class EverestDefaultTableHandler(EventHandler):
-    def __init__(
-        self,
-    ) -> None:
-        super().__init__()
+_TABLE_COLUMNS: Final[dict[str, dict[str, str]]] = {
+    "results": {
+        "batch_id": "Batch",
+        "functions.target_objective": "Total-Objective",
+        "functions.objectives": "Objective",
+        "functions.constraints": "Constraint",
+        "evaluations.variables": "Control",
+    },
+    "gradients": {
+        "batch_id": "Batch",
+        "gradients.target_objective": "Total-Gradient",
+        "gradients.objectives": "Grad-objective",
+        "gradients.constraints": "Grad-constraint",
+    },
+    "simulations": {
+        "batch_id": "Batch",
+        "realization": "Realization",
+        "variable": "Control-name",
+        "evaluations.variables": "Control",
+        "evaluations.objectives": "Objective",
+        "evaluations.constraints": "Constraint",
+    },
+    "perturbations": {
+        "batch_id": "Batch",
+        "realization": "Realization",
+        "perturbation": "Perturbation",
+        "evaluations.perturbed_variables": "Control",
+        "evaluations.perturbed_objectives": "Objective",
+        "evaluations.perturbed_constraints": "Constraint",
+    },
+    "constraints": {
+        "batch_id": "Batch",
+        "constraint_info.bound_lower": "BCD-lower",
+        "constraint_info.bound_upper": "BCD-upper",
+        "constraint_info.linear_lower": "ICD-lower",
+        "constraint_info.linear_upper": "ICD-upper",
+        "constraint_info.nonlinear_lower": "OCD-lower",
+        "constraint_info.nonlinear_upper": "OCD-upper",
+        "constraint_info.bound_violation": "BCD-violation",
+        "constraint_info.linear_violation": "ICD-violation",
+        "constraint_info.nonlinear_violation": "OCD-violation",
+    },
+}
+
+_TABLE_TYPE_MAP: Final[dict[str, Literal["functions", "gradients"]]] = {
+    "results": "functions",
+    "gradients": "gradients",
+    "simulations": "functions",
+    "perturbations": "gradients",
+    "constraints": "functions",
+}
+
+
+class EverestDefaultTableHandler(Table):
+    def __init__(self) -> None:
+        super().__init__(sep="\n")
         self._path: Path | None = None
-        self._tables = []
-        for type_, table_type in TABLE_TYPE_MAP.items():
-            self._tables.append(
-                ResultsTable(
-                    f"{type_}.txt",
-                    TABLE_COLUMNS[type_],
-                    table_type=table_type,
-                    min_header_len=3,
+
+        for name, columns in _TABLE_COLUMNS.items():
+            for domain in ("user", "optimizer"):
+                self.add_table(
+                    name if domain == "user" else f"{name}_scaled",
+                    columns=columns,
+                    table_type=_TABLE_TYPE_MAP[name],
+                    domain=domain,
                 )
-            )
+        self.set_callback(self._save)
 
-    def handle_event(self, event: EnOptEvent) -> None:
-        parent_path = event.context.optimizer.output_dir
-        if parent_path is None or not (results := event.results):
-            return
-
-        if self._path is None:
-            if parent_path.exists() and not parent_path.is_dir():
-                msg = f"Cannot write tables to: {parent_path}"
-                raise RuntimeError(msg)
-            self._path = parent_path
-
-        results = tuple(
-            item.transform_from_optimizer(event.context) for item in results
-        )
-        for table in self._tables:
-            table.add_results(results, self._path)
-
-    @property
-    def event_types(self) -> set[EnOptEventType]:
-        return {EnOptEventType.FINISHED_EVALUATION}
-
-
-class ResultsTable:
-    def __init__(
-        self,
-        file_name: str,
-        columns: dict[str, str],
-        *,
-        table_type: Literal["functions", "gradients"] = "functions",
-        min_header_len: int | None = None,
-    ) -> None:
-        self._file_name = file_name
-        self._columns = columns
-        self._results_type = table_type
-        self._min_header_len = min_header_len
-        self._frames: list[pd.DataFrame] = []
-
-    def add_results(self, results: Sequence[Results], path: Path) -> None:
-        columns = deepcopy(self._columns)
-        if results[0].metadata is not None:
-            for item in results[0].metadata:
-                columns[f"metadata.{item}"] = item
-        frame = results_to_dataframe(
-            results,
-            set(columns),
-            result_type=self._results_type,
-        )
-        if not frame.empty:
-            self._frames.append(frame)
-            self._save(columns, path / self._file_name)
-
-    def _save(self, columns: dict[str, str], path: Path) -> None:
-        data = pd.concat(self._frames)
-        if not data.empty:
-            # Turn the multi-index into columns:
-            data = data.reset_index()
-
-            # Reorder the columns to match the order of the headers:
-            data = reorder_columns(data, columns)
-
-            # Rename the columns:
-            data = rename_columns(data, columns)
-
-            # Add newlines to the headers to make them all the same length:
-            max_lines = max(len(str(column).split("\n")) for column in data.columns)
-            if self._min_header_len is not None and max_lines < self._min_header_len:
-                max_lines = self._min_header_len
-            data = data.rename(
-                columns={
-                    column: str(column)
-                    + (max_lines - len(str(column).split("\n"))) * "\n"
-                    for column in data.columns
-                },
-            )
-
-            # Write the table to a file:
-            table_data = {str(column): data[column] for column in data}
-            path.write_text(
-                tabulate(
-                    table_data, headers="keys", tablefmt="simple", showindex=False
-                ),
-                encoding="utf-8",
-            )
+    def _save(self, event: EnOptEvent) -> None:
+        if (parent_path := event.context.optimizer.output_dir) is not None:
+            if self._path is None:
+                if parent_path.exists() and not parent_path.is_dir():
+                    msg = f"Cannot write tables to: {parent_path}"
+                    raise RuntimeError(msg)
+                self._path = parent_path
+            for name, data in self.get_tables().items():
+                (self._path / name).with_suffix(".txt").write_text(
+                    tabulate(
+                        {str(column): data[column] for column in data},
+                        headers="keys",
+                        tablefmt="simple",
+                        showindex=False,
+                    ),
+                    encoding="utf-8",
+                )
