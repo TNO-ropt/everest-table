@@ -5,30 +5,7 @@ This package installs a plugin for the `ropt` robust optimization package, addin
 
 ## Installation
 
-Installation must be done from source. First find the appropriate version of the plugin by listing the available tags:
-
-```bash
-$ git tag -l
-ert-14.3.0
-ert-14.3.3
-ert-14.4.0
-ert-latest
-```
-
-The `ert-latest` tag just points to the newest tag, use it if the ERT/Everest version is the latest stable version.
-
-Check out the selected tag using:
-
-```bash
-git checkout <tag>
-```
-replacing `<tag>` with the selected tag.
-
-For older versions of ERT/Everest, select the highest version equal to or lower than the ERT/Everest version. For example, for ERT/Everest version 14.3.3 use `ert-14.3.3`. For version 14.3.2, `ert-14.3.0` would be needed.
-
-**NOTE**: Adjust the tag according to the actual output of `git tag -l`!
-
-After checking out the right tag, install the plugin using `pip`:
+Installation must be done from source, install the plugin using `pip`:
 
 ```bash
 pip install .
@@ -40,7 +17,9 @@ To enable the plugin, edit or create the following JSON file `<python-install-di
 ```json
 {
     "basic_optimizer": {
-        "event_handlers": ["everest_table/table"]
+        "event_handlers": [
+            "everest_table.Table"
+        ]
     }
 }
 ```
