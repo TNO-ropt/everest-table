@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, Literal
 
-from ropt.workflow.event_handlers import Table
+from ropt.workflow.event_handlers import TableHandler
 from tabulate import tabulate
 
 if TYPE_CHECKING:
@@ -64,7 +64,7 @@ _TABLE_TYPE_MAP: Final[dict[str, Literal["functions", "gradients"]]] = {
 }
 
 
-class EverestDefaultTableHandler(Table):
+class EverestDefaultTableHandler(TableHandler):
     def __init__(self) -> None:
         super().__init__(sep="\n")
         self._path: Path | None = None
