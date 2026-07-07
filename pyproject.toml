@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools", "setuptools-scm>=8.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -22,11 +22,9 @@ where = ["src"]
 [tool.setuptools.package-data]
 everest_table = ["py.typed"]
 
-[tool.setuptools.dynamic]
-version = { attr = "everest_table.version.__version__" }
-
 [tool.setuptools_scm]
-write_to = "src/everest_table/version.py"
+version_file = "src/everest_table/version.py"
+fallback_version = "0.0.0.dev0"
 
 
 [tool.ruff.format]
