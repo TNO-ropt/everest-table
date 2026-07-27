@@ -34,12 +34,7 @@ exclude = ["src/everest_table/version.py", "build"]
 preview = true
 exclude = ["test-data/*"]
 select = ["ALL"]
-ignore = [
-    "COM812", # missing-trailing-comma
-    "CPY",    # flake8-copyright
-    "E501",   # line-too-long
-    "S101",   # assert
-]
+ignore = ["missing-trailing-comma", "CPY", "line-too-long", "assert"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
