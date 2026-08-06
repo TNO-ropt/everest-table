@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, Literal
 
-from ropt.workflow.event_handlers import DataFrameHandler
+from ropt.components.event_handlers import DataFrameHandler
 from tabulate import tabulate
 
 if TYPE_CHECKING:
