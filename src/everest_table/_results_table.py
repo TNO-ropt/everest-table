@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final, Literal
 
 from ropt.components.event_handlers import DataFrameHandler
+from ropt.exceptions import WorkflowError
 from tabulate import tabulate
 
 if TYPE_CHECKING:
@@ -84,7 +85,7 @@ class EverestDefaultTableHandler(DataFrameHandler):
             if self._path is None:
                 if parent_path.exists() and not parent_path.is_dir():
                     msg = f"Cannot write tables to: {parent_path}"
-                    raise RuntimeError(msg)
+                    raise WorkflowError(msg)
                 self._path = parent_path
             for name, data in self.get_tables().items():
                 (self._path / name).with_suffix(".txt").write_text(
