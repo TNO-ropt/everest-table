@@ -81,7 +81,8 @@ class EverestDefaultTableHandler(DataFrameHandler):
         self.set_callback(self._save)
 
     def _save(self, event: EnOptEvent) -> None:
-        if (parent_path := event.context.optimizer.output_dir) is not None:
+        parent_path = event.context.optimizer.output_dir
+        if parent_path is not None:
             if self._path is None:
                 if parent_path.exists() and not parent_path.is_dir():
                     msg = f"Cannot write tables to: {parent_path}"
