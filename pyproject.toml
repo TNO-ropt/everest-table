@@ -47,4 +47,4 @@ module = ["everest.*", "ert.*"]
 ignore_missing_imports = true
 
 [dependency-groups]
-dev = ["mypy", "pandas-stubs", "ruff", "types-tabulate"]
+dev = ["mypy", "ruff", "types-tabulate"]

@@ -9,8 +9,6 @@ from tabulate import tabulate
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from ropt.events import EnOptEvent
-
 
 _TABLE_COLUMNS: Final[dict[str, dict[str, str]]] = {
     "results": {
@@ -67,7 +65,7 @@ _TABLE_TYPE_MAP: Final[dict[str, Literal["functions", "gradients"]]] = {
 
 class EverestDefaultTableHandler(DataFrameHandler):
     def __init__(self) -> None:
-        super().__init__(sep="\n")
+        super().__init__(sep="\n", backend="polars")
         self._path: Path | None = None
 
         for name, columns in _TABLE_COLUMNS.items():
@@ -80,18 +78,17 @@ class EverestDefaultTableHandler(DataFrameHandler):
                 )
         self.set_callback(self._save)
 
-    def _save(self, event: EnOptEvent) -> None:
-        parent_path = event.context.optimizer.output_dir
-        if parent_path is not None:
+    def _save(self, output_dir: Path | None) -> None:
+        if output_dir is not None:
             if self._path is None:
-                if parent_path.exists() and not parent_path.is_dir():
-                    msg = f"Cannot write tables to: {parent_path}"
+                if output_dir.exists() and not output_dir.is_dir():
+                    msg = f"Cannot write tables to: {output_dir}"
                     raise WorkflowError(msg)
-                self._path = parent_path
+                self._path = output_dir
             for name, data in self.get_tables().items():
                 (self._path / name).with_suffix(".txt").write_text(
                     tabulate(
-                        {str(column): data[column] for column in data},
+                        {str(column): data[column] for column in data.columns},
                         headers="keys",
                         tablefmt="simple",
                         showindex=False,
