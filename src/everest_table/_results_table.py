@@ -65,7 +65,7 @@ _TABLE_TYPE_MAP: Final[dict[str, Literal["functions", "gradients"]]] = {
 
 class EverestDefaultTableHandler(DataFrameHandler):
     def __init__(self) -> None:
-        super().__init__(sep="\n", backend="polars")
+        super().__init__(sep="\n", engine="polars")
         self._path: Path | None = None
 
         for name, columns in _TABLE_COLUMNS.items():
