@@ -69,12 +69,12 @@ class EverestDefaultTableHandler(DataFrameHandler):
         self._path: Path | None = None
 
         for name, columns in _TABLE_COLUMNS.items():
-            for domain in ("user", "optimizer"):
+            for scaled in (False, True):
                 self.add_table(
-                    name if domain == "user" else f"{name}_scaled",
+                    f"{name}_scaled" if scaled else name,
                     columns=columns,
                     table_type=_TABLE_TYPE_MAP[name],
-                    domain=domain,
+                    scaled=scaled,
                 )
         self.set_callback(self._save)
 
