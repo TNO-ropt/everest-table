@@ -13,14 +13,14 @@ if TYPE_CHECKING:
 _TABLE_COLUMNS: Final[dict[str, dict[str, str]]] = {
     "results": {
         "batch_id": "Batch",
-        "functions.target_objective": "Total-Objective",
+        "target_objective": "Total-Objective",
         "functions.objectives": "Objective",
         "functions.constraints": "Constraint",
-        "evaluations.variables": "Control",
+        "variables": "Control",
     },
     "gradients": {
         "batch_id": "Batch",
-        "gradients.target_objective": "Total-Gradient",
+        "target_gradient": "Total-Gradient",
         "gradients.objectives": "Grad-objective",
         "gradients.constraints": "Grad-constraint",
     },
@@ -28,7 +28,7 @@ _TABLE_COLUMNS: Final[dict[str, dict[str, str]]] = {
         "batch_id": "Batch",
         "realization": "Realization",
         "variable": "Control-name",
-        "evaluations.variables": "Control",
+        "variables": "Control",
         "evaluations.objectives": "Objective",
         "evaluations.constraints": "Constraint",
     },
@@ -36,7 +36,7 @@ _TABLE_COLUMNS: Final[dict[str, dict[str, str]]] = {
         "batch_id": "Batch",
         "realization": "Realization",
         "perturbation": "Perturbation",
-        "evaluations.perturbed_variables": "Control",
+        "perturbed_variables": "Control",
         "evaluations.perturbed_objectives": "Objective",
         "evaluations.perturbed_constraints": "Constraint",
     },
@@ -69,13 +69,7 @@ class EverestDefaultTableHandler(DataFrameHandler):
         self._path: Path | None = None
 
         for name, columns in _TABLE_COLUMNS.items():
-            for scaled in (False, True):
-                self.add_table(
-                    f"{name}_scaled" if scaled else name,
-                    columns=columns,
-                    table_type=_TABLE_TYPE_MAP[name],
-                    scaled=scaled,
-                )
+            self.add_table(name, columns=columns, table_type=_TABLE_TYPE_MAP[name])
         self.set_callback(self._save)
 
     def _save(self, output_dir: Path | None) -> None:
