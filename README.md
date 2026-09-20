@@ -5,7 +5,7 @@ This package installs a plugin for the `ropt` robust optimization package, addin
 
 ## Installation
 
-Installation must be done from source, install the plugin using `pip`:
+Installation must be done from source. Install the plugin using `pip`:
 
 ```bash
 pip install .
