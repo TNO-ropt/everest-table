@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, Literal
 
-from ropt.components.event_handlers import DataFrameHandler
+from ropt import DataFrameHandler
 from ropt.exceptions import WorkflowError
 from tabulate import tabulate
 
