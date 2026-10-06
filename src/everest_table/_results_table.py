@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final, Literal
 
-from ropt import DataFrameHandler
-from ropt.exceptions import WorkflowError
+from ropt import DataFrameHandler, WorkflowError
 from tabulate import tabulate
 
 if TYPE_CHECKING:
