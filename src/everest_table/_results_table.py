@@ -13,15 +13,15 @@ _TABLE_COLUMNS: Final[dict[str, dict[str, str]]] = {
     "results": {
         "batch_id": "Batch",
         "target_objective": "Total-Objective",
-        "functions.objectives": "Objective",
-        "functions.constraints": "Constraint",
+        "aggregates.objectives": "Objective",
+        "aggregates.constraints": "Constraint",
         "variables": "Control",
     },
     "gradients": {
         "batch_id": "Batch",
-        "target_gradient": "Total-Gradient",
-        "gradients.objectives": "Grad-objective",
-        "gradients.constraints": "Grad-constraint",
+        "target_objective": "Total-Gradient",
+        "aggregates.objectives": "Grad-objective",
+        "aggregates.constraints": "Grad-constraint",
     },
     "simulations": {
         "batch_id": "Batch",
@@ -35,9 +35,9 @@ _TABLE_COLUMNS: Final[dict[str, dict[str, str]]] = {
         "batch_id": "Batch",
         "realization": "Realization",
         "perturbation": "Perturbation",
-        "perturbed_variables": "Control",
-        "evaluations.perturbed_objectives": "Objective",
-        "evaluations.perturbed_constraints": "Constraint",
+        "perturbations.variables": "Control",
+        "perturbations.objectives": "Objective",
+        "perturbations.constraints": "Constraint",
     },
     "constraints": {
         "batch_id": "Batch",
